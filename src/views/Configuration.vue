@@ -152,6 +152,64 @@
         </div>
       </div>
 
+      <div class="section">
+        <div class="section-header">
+          <h2>Servicios Adicionales</h2>
+        </div>
+
+        <div class="table-container">
+          <table class="config-table">
+            <thead>
+              <tr>
+                <th>Nombre del Servicio</th>
+                <th>Descripción</th>
+                <th>Precio (USD)</th>
+                <th>Orden</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="extra in extrasLocal" :key="extra.id">
+                <td>
+                  <input
+                    v-model="extra.name"
+                    type="text"
+                    class="table-input"
+                    @input="markAsModified()"
+                  />
+                </td>
+                <td>
+                  <input
+                    v-model="extra.description"
+                    type="text"
+                    class="table-input"
+                    @input="markAsModified()"
+                  />
+                </td>
+                <td class="price-cell">
+                  <div class="price-input-wrapper">
+                    <span class="currency">$</span>
+                    <input
+                      v-model.number="extra.price"
+                      type="number"
+                      class="table-input price-input"
+                      @input="markAsModified()"
+                    />
+                  </div>
+                </td>
+                <td class="order-cell">
+                  <input
+                    v-model.number="extra.order_index"
+                    type="number"
+                    class="table-input order-input"
+                    @input="markAsModified()"
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <div v-if="hasModifications" class="save-banner">
         <div class="save-banner-content">
           <span>Tienes cambios sin guardar</span>
@@ -167,23 +225,26 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useData } from '../composables/useData';
-import type { Category, Plan, CopyTemplate } from '../lib/supabase';
+import type { Category, Plan, CopyTemplate, Extra } from '../lib/supabase';
 
 const {
   categories,
   plans,
   copyTemplates,
+  extras,
   loading,
   error,
   loadAll,
   updateCategory,
   updatePlan,
-  updateCopyTemplate
+  updateCopyTemplate,
+  updateExtra
 } = useData();
 
 const categoriesLocal = ref<Category[]>([]);
 const plansLocal = ref<Plan[]>([]);
 const copyTemplatesLocal = ref<CopyTemplate[]>([]);
+const extrasLocal = ref<Extra[]>([]);
 const hasModifications = ref(false);
 const saving = ref(false);
 
@@ -192,6 +253,7 @@ onMounted(async () => {
   categoriesLocal.value = JSON.parse(JSON.stringify(categories.value));
   plansLocal.value = JSON.parse(JSON.stringify(plans.value));
   copyTemplatesLocal.value = JSON.parse(JSON.stringify(copyTemplates.value));
+  extrasLocal.value = JSON.parse(JSON.stringify(extras.value));
 });
 
 const getCategoryPlans = (categoryId: string) => {
@@ -246,6 +308,15 @@ const saveAllChanges = async () => {
         stage_name: template.stage_name,
         template_text: template.template_text,
         order_index: template.order_index
+      });
+    }
+
+    for (const extra of extrasLocal.value) {
+      await updateExtra(extra.id, {
+        name: extra.name,
+        description: extra.description,
+        price: extra.price,
+        order_index: extra.order_index
       });
     }
 

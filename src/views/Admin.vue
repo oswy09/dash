@@ -110,7 +110,7 @@
             <div class="item-info">
               <h4>{{ extra.name }}</h4>
               <p class="item-description">{{ extra.description }}</p>
-              <p class="extra-price">${{ extra.price.toLocaleString() }} USD</p>
+              <p class="plan-price">${{ extra.price.toLocaleString() }} USD</p>
             </div>
             <div class="item-actions">
               <button @click="openExtraModal(extra)" class="btn-edit">Editar</button>
