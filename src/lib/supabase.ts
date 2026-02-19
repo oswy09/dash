@@ -25,7 +25,9 @@ export interface Plan {
   category_id: string;
   name: string;
   slug: string;
-  price: number;
+  price_cop: number;
+  price_usd: number;
+  currency: string;
   features: string[];
   order_index: number;
   created_at: string;
@@ -47,7 +49,9 @@ export interface Extra {
   id: string;
   name: string;
   description: string;
-  price: number;
+  price_cop: number;
+  price_usd: number;
+  currency: string;
   order_index: number;
   created_at: string;
   updated_at: string;

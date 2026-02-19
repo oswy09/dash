@@ -26,7 +26,7 @@
             :class="['plan-btn', { active: selectedPlanId === p.id }]"
           >
             <span class="plan-name">{{ p.name }}</span>
-            <span class="plan-price">${{ p.price.toLocaleString() }}</span>
+            <span class="plan-price">{{ formatPrice(p.price_cop, p.price_usd, selectedCurrency) }}</span>
           </button>
         </div>
       </div>
@@ -52,7 +52,7 @@
                 <label :for="`extra-${extra.id}`" class="extra-name">{{ extra.name }}</label>
               </div>
               <p class="extra-description">{{ extra.description }}</p>
-              <p class="extra-price">+${{ extra.price.toLocaleString() }}</p>
+              <p class="extra-price">+{{ formatPrice(extra.price_cop, extra.price_usd, selectedCurrency) }}</p>
             </div>
           </div>
         </div>
@@ -66,9 +66,7 @@
           <div class="price-container">
             <span class="price-label">Inversión Total</span>
             <div class="price">
-              <span class="currency">$</span>
-              <span class="amount">{{ totalPrice.toLocaleString() }}</span>
-              <span class="period">USD</span>
+              <span class="amount">{{ formatTotalPrice }}</span>
             </div>
           </div>
         </div>
@@ -97,7 +95,7 @@
           <div class="extras-list">
             <div v-for="extra in selectedExtras" :key="extra.id" class="extra-item">
               <span>{{ extra.name }}</span>
-              <span class="extra-item-price">+${{ extra.price.toLocaleString() }}</span>
+              <span class="extra-item-price">+{{ formatPrice(extra.price_cop, extra.price_usd, selectedCurrency) }}</span>
             </div>
           </div>
         </div>
@@ -137,6 +135,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useData } from '../composables/useData';
+import { getCurrencySettings, formatPrice, getPrice, type Currency } from '../lib/currency';
 
 const route = useRoute();
 const accepted = ref(false);
@@ -144,6 +143,9 @@ const selectedExtrasIds = ref<string[]>([]);
 const selectedPlanId = ref<string>('');
 
 const { categories, plans, extras, loadAll } = useData();
+
+const currencySettings = getCurrencySettings();
+const selectedCurrency = ref<Currency>(currencySettings.currency);
 
 const clientName = computed(() => route.query.cliente as string || 'Tu Negocio');
 const categoryId = computed(() => route.query.categoryId as string);
@@ -154,16 +156,22 @@ const availableExtras = computed(() => extras.value);
 
 const plan = computed(() => plans.value.find(p => p.id === selectedPlanId.value));
 
-const selectedExtras = computed(() => 
+const selectedExtras = computed(() =>
   extras.value.filter(e => selectedExtrasIds.value.includes(e.id))
 );
 
 const totalPrice = computed(() => {
-  let total = plan.value?.price || 0;
+  let total = plan.value ? getPrice(plan.value.price_cop, plan.value.price_usd, selectedCurrency.value) : 0;
   selectedExtras.value.forEach(extra => {
-    total += extra.price;
+    total += getPrice(extra.price_cop, extra.price_usd, selectedCurrency.value);
   });
   return total;
+});
+
+const formatTotalPrice = computed(() => {
+  const symbol = selectedCurrency.value === 'COP' ? '$' : '$';
+  const suffix = selectedCurrency.value === 'COP' ? ' COP' : ' USD';
+  return `${symbol}${totalPrice.value.toLocaleString('es-CO')}${suffix}`;
 });
 
 const toggleExtra = (extraId: string) => {

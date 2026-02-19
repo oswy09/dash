@@ -4,6 +4,13 @@
       <div class="logo">
         <h2>ProposalGen</h2>
         <div class="admin-buttons">
+          <div class="currency-selector">
+            <label>Moneda:</label>
+            <select v-model="selectedCurrency" @change="onCurrencyChange" class="currency-select">
+              <option value="COP">COP (Pesos)</option>
+              <option value="USD">USD (Dólares)</option>
+            </select>
+          </div>
           <router-link to="/admin" class="btn-admin">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M8 10C9.65685 10 11 8.65685 11 7C11 5.34315 9.65685 4 8 4C6.34315 4 5 5.34315 5 7C5 8.65685 6.34315 10 8 10Z" stroke="currentColor" stroke-width="1.5"/>
@@ -49,8 +56,7 @@
               <div class="plan-header">
                 <h3>{{ plan.name }}</h3>
                 <div class="price">
-                  <span class="currency">$</span>
-                  <span class="amount">{{ plan.price.toLocaleString() }}</span>
+                  <span class="amount">{{ formatPrice(plan.price_cop, plan.price_usd, selectedCurrency) }}</span>
                 </div>
               </div>
               <ul class="features-list">
@@ -130,7 +136,7 @@
                 <span class="plan-badge">Plan {{ currentPlan.name }}</span>
                 <div class="plan-price">
                   <span class="price-label">Inversión Total</span>
-                  <span class="price-value">${{ currentPlan.price.toLocaleString() }} USD</span>
+                  <span class="price-value">{{ formatPrice(currentPlan.price_cop, currentPlan.price_usd, selectedCurrency) }}</span>
                 </div>
               </div>
 
@@ -185,6 +191,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useData } from '../composables/useData';
+import { getCurrencySettings, saveCurrencySettings, formatPrice, type Currency } from '../lib/currency';
 
 const {
   categories,
@@ -194,6 +201,8 @@ const {
   processTemplate
 } = useData();
 
+const currencySettings = getCurrencySettings();
+const selectedCurrency = ref<Currency>(currencySettings.currency);
 const selectedCategoryId = ref<string>('');
 const selectedPlanId = ref<string>('');
 const selectedCopyId = ref<string>('');
@@ -202,6 +211,13 @@ const generatedLink = ref<string>('');
 const copied = ref(false);
 const copiedMessage = ref(false);
 const linkInput = ref<HTMLInputElement | null>(null);
+
+const onCurrencyChange = () => {
+  saveCurrencySettings({
+    currency: selectedCurrency.value,
+    exchangeRate: currencySettings.exchangeRate
+  });
+};
 
 onMounted(() => {
   loadAll();
@@ -312,6 +328,43 @@ const copyCopyText = async () => {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.currency-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.currency-selector label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.currency-select {
+  padding: 6px 8px;
+  background: #F9FAFB;
+  color: #374151;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.currency-select:hover {
+  border-color: #5D3FD3;
+  background: white;
+}
+
+.currency-select:focus {
+  outline: none;
+  border-color: #5D3FD3;
+  box-shadow: 0 0 0 3px rgba(93, 63, 211, 0.1);
 }
 
 .btn-admin {

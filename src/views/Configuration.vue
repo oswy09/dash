@@ -85,7 +85,8 @@
               <thead>
                 <tr>
                   <th>Nombre del Plan</th>
-                  <th>Precio (USD)</th>
+                  <th>Precio COP</th>
+                  <th>Precio USD</th>
                   <th>Orden</th>
                 </tr>
               </thead>
@@ -103,7 +104,18 @@
                     <div class="price-input-wrapper">
                       <span class="currency">$</span>
                       <input
-                        v-model.number="plan.price"
+                        v-model.number="plan.price_cop"
+                        type="number"
+                        class="table-input price-input"
+                        @input="markAsModified()"
+                      />
+                    </div>
+                  </td>
+                  <td class="price-cell">
+                    <div class="price-input-wrapper">
+                      <span class="currency">$</span>
+                      <input
+                        v-model.number="plan.price_usd"
                         type="number"
                         class="table-input price-input"
                         @input="markAsModified()"
@@ -163,7 +175,8 @@
               <tr>
                 <th>Nombre del Servicio</th>
                 <th>Descripción</th>
-                <th>Precio (USD)</th>
+                <th>Precio COP</th>
+                <th>Precio USD</th>
                 <th>Orden</th>
               </tr>
             </thead>
@@ -189,7 +202,18 @@
                   <div class="price-input-wrapper">
                     <span class="currency">$</span>
                     <input
-                      v-model.number="extra.price"
+                      v-model.number="extra.price_cop"
+                      type="number"
+                      class="table-input price-input"
+                      @input="markAsModified()"
+                    />
+                  </div>
+                </td>
+                <td class="price-cell">
+                  <div class="price-input-wrapper">
+                    <span class="currency">$</span>
+                    <input
+                      v-model.number="extra.price_usd"
                       type="number"
                       class="table-input price-input"
                       @input="markAsModified()"
@@ -295,7 +319,9 @@ const saveAllChanges = async () => {
         category_id: plan.category_id,
         name: plan.name,
         slug: plan.slug,
-        price: plan.price,
+        price_cop: plan.price_cop,
+        price_usd: plan.price_usd,
+        currency: plan.currency,
         features: plan.features,
         order_index: plan.order_index
       });
@@ -315,7 +341,9 @@ const saveAllChanges = async () => {
       await updateExtra(extra.id, {
         name: extra.name,
         description: extra.description,
-        price: extra.price,
+        price_cop: extra.price_cop,
+        price_usd: extra.price_usd,
+        currency: extra.currency,
         order_index: extra.order_index
       });
     }

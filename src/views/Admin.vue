@@ -61,7 +61,10 @@
             <div v-for="plan in categoryPlans(category.id)" :key="plan.id" class="item-card">
               <div class="item-info">
                 <h4>{{ plan.name }}</h4>
-                <p class="plan-price">${{ plan.price.toLocaleString() }} USD</p>
+                <div class="price-group">
+                  <p class="plan-price">${{ plan.price_cop.toLocaleString() }} COP</p>
+                  <p class="plan-price-alt">${{ plan.price_usd.toLocaleString() }} USD</p>
+                </div>
                 <ul class="features-preview">
                   <li v-for="(feature, index) in plan.features.slice(0, 3)" :key="index">{{ feature }}</li>
                   <li v-if="plan.features.length > 3">...y {{ plan.features.length - 3 }} más</li>
@@ -110,7 +113,10 @@
             <div class="item-info">
               <h4>{{ extra.name }}</h4>
               <p class="item-description">{{ extra.description }}</p>
-              <p class="plan-price">${{ extra.price.toLocaleString() }} USD</p>
+              <div class="price-group">
+                <p class="plan-price">${{ extra.price_cop.toLocaleString() }} COP</p>
+                <p class="plan-price-alt">${{ extra.price_usd.toLocaleString() }} USD</p>
+              </div>
             </div>
             <div class="item-actions">
               <button @click="openExtraModal(extra)" class="btn-edit">Editar</button>
@@ -173,8 +179,12 @@
             <input v-model="planForm.slug" type="text" required />
           </div>
           <div class="form-group">
-            <label>Precio (USD)</label>
-            <input v-model.number="planForm.price" type="number" required />
+            <label>Precio en COP (Pesos Colombianos)</label>
+            <input v-model.number="planForm.price_cop" type="number" required />
+          </div>
+          <div class="form-group">
+            <label>Precio en USD (Dólares)</label>
+            <input v-model.number="planForm.price_usd" type="number" required />
           </div>
           <div class="form-group">
             <label>Características (una por línea)</label>
@@ -245,8 +255,12 @@
             <textarea v-model="extraForm.description" rows="4" placeholder="Describe el servicio adicional"></textarea>
           </div>
           <div class="form-group">
-            <label>Precio (USD)</label>
-            <input v-model.number="extraForm.price" type="number" required />
+            <label>Precio en COP (Pesos Colombianos)</label>
+            <input v-model.number="extraForm.price_cop" type="number" required />
+          </div>
+          <div class="form-group">
+            <label>Precio en USD (Dólares)</label>
+            <input v-model.number="extraForm.price_usd" type="number" required />
           </div>
           <div class="form-group">
             <label>Orden</label>
@@ -317,7 +331,9 @@ const planForm = ref({
   category_id: '',
   name: '',
   slug: '',
-  price: 0,
+  price_cop: 0,
+  price_usd: 0,
+  currency: 'COP',
   features: [] as string[],
   order_index: 0
 });
@@ -338,7 +354,9 @@ const editingExtra = ref<Extra | null>(null);
 const extraForm = ref({
   name: '',
   description: '',
-  price: 0,
+  price_cop: 0,
+  price_usd: 0,
+  currency: 'COP',
   order_index: 0
 });
 
@@ -403,7 +421,9 @@ const openPlanModal = (plan?: Plan) => {
       category_id: plan.category_id,
       name: plan.name,
       slug: plan.slug,
-      price: plan.price,
+      price_cop: plan.price_cop,
+      price_usd: plan.price_usd,
+      currency: plan.currency,
       features: plan.features,
       order_index: plan.order_index
     };
@@ -414,7 +434,9 @@ const openPlanModal = (plan?: Plan) => {
       category_id: '',
       name: '',
       slug: '',
-      price: 0,
+      price_cop: 0,
+      price_usd: 0,
+      currency: 'COP',
       features: [],
       order_index: 0
     };
@@ -495,7 +517,9 @@ const openExtraModal = (extra?: Extra) => {
     extraForm.value = {
       name: extra.name,
       description: extra.description,
-      price: extra.price,
+      price_cop: extra.price_cop,
+      price_usd: extra.price_usd,
+      currency: extra.currency,
       order_index: extra.order_index
     };
   } else {
@@ -503,7 +527,9 @@ const openExtraModal = (extra?: Extra) => {
     extraForm.value = {
       name: '',
       description: '',
-      price: 0,
+      price_cop: 0,
+      price_usd: 0,
+      currency: 'COP',
       order_index: 0
     };
   }
@@ -711,11 +737,25 @@ const confirmDeleteExtra = async (id: string) => {
   margin: 0;
 }
 
+.price-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
 .plan-price {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: #5D3FD3;
-  margin: 0 0 12px 0;
+  margin: 0;
+}
+
+.plan-price-alt {
+  font-size: 14px;
+  font-weight: 600;
+  color: #6B7280;
+  margin: 0;
 }
 
 .features-preview {
